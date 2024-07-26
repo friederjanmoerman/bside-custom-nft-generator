@@ -38,19 +38,11 @@
                       "subcategories": {
                         "hair": {
                           "probability": 0.5,
-                          "layers": [
-                            { "name": "hair", "path": "assets/male/hair" },
-                            { "name": "clothes", "path": "assets/male/clothes" },
-                            { "name": "mouth", "path": "assets/male/mouth" }
-                          ]
+                          "layers": [{ "name": "hair", "path": "assets/male/hair" }]
                         },
                         "hat": {
                           "probability": 0.5,
-                          "layers": [
-                            { "name": "clothes", "path": "assets/male/clothes" },
-                            { "name": "hat", "path": "assets/male/hat" },
-                            { "name": "mouth", "path": "assets/male/mouth" }
-                          ]
+                          "layers": [{ "name": "hat", "path": "assets/male/hat" }]
                         }
                       }
                     }
