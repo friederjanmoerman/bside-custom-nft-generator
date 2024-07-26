@@ -46,45 +46,52 @@ const getRandomItem = (items) => {
 
 // Function to draw a layer
 const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
-  console.log(`Drawing layer: ${layerConfig.name}`);
-  let layer = config.layers[layerConfig.name];
-
-  if (layerConfig.name === "gender") {
-    const subcategoryProbabilities = {};
-    for (const subcategory in layer.subcategories) {
-      subcategoryProbabilities[subcategory] = layer.subcategories[subcategory].probability;
-    }
-    gender = getRandomItem(subcategoryProbabilities);
-    console.log(`Selected gender: ${gender}`);
-
-    traits.push({ trait_type: "Gender", value: gender });
-
-    const genderLayers = layer.subcategories[gender].layers;
-
-    for (const genderLayer of genderLayers) {
-      await drawLayer(ctx, canvas, genderLayer, traits, gender);
-    }
-  } else if (gender && config.layers.gender.subcategories[gender].layers.some(l => l.name === layerConfig.name)) {
-    const genderLayer = config.layers.gender.subcategories[gender].layers.find(l => l.name === layerConfig.name);
-    if (genderLayer && genderLayer.path) {
-      const items = parseFilenames(genderLayer.path);
+    console.log(`Drawing layer: ${layerConfig.name}`);
+    let layer = config.layers[layerConfig.name];
+  
+    if (layerConfig.name === "gender") {
+      const subcategoryProbabilities = {};
+      for (const subcategory in layer.subcategories) {
+        subcategoryProbabilities[subcategory] = layer.subcategories[subcategory].probability;
+      }
+      gender = getRandomItem(subcategoryProbabilities);
+      console.log(`Selected gender: ${gender}`);
+  
+      traits.push({ trait_type: "Gender", value: gender });
+  
+      const genderLayers = layer.subcategories[gender].layers;
+  
+      for (const genderLayer of genderLayers) {
+        await drawLayer(ctx, canvas, genderLayer, traits, gender);
+      }
+    } else if (gender && config.layers.gender.subcategories[gender].layers.some(l => l.name === layerConfig.name)) {
+      const genderLayer = config.layers.gender.subcategories[gender].layers.find(l => l.name === layerConfig.name);
+      if (genderLayer && genderLayer.path) {
+        const items = parseFilenames(genderLayer.path);
+        const item = getRandomItem(items);
+        console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
+        
+        // Remove the percentage part from the filename for metadata
+        const cleanedItem = item.replace(/#\d+/, '');
+        const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
+        ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+  
+        traits.push({ trait_type: layerConfig.name, value: cleanedItem });
+      }
+    } else if (layer && layer.path) {
+      const items = parseFilenames(layer.path);
       const item = getRandomItem(items);
-      console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
-      const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
+      console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
+  
+      // Remove the percentage part from the filename for metadata
+      const cleanedItem = item.replace(/#\d+/, '');
+      const image = await loadImageAsync(path.join(__dirname, layer.path, item));
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-      traits.push({ trait_type: layerConfig.name, value: item });
+  
+      traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
-  } else if (layer && layer.path) {
-    const items = parseFilenames(layer.path);
-    const item = getRandomItem(items);
-    console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
-    const image = await loadImageAsync(path.join(__dirname, layer.path, item));
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-
-    traits.push({ trait_type: layerConfig.name, value: item });
-  }
-};
+  };
+  
 
 // Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {
