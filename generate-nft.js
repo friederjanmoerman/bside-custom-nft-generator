@@ -57,7 +57,7 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
       gender = getRandomItem(subcategoryProbabilities);
       console.log(`Selected gender: ${gender}`);
   
-      traits.push({ trait_type: "Gender", value: gender });
+      traits.push({ trait_type: "gender", value: gender });
   
       const genderLayers = layer.subcategories[gender].layers;
   
@@ -71,8 +71,8 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
         const item = getRandomItem(items);
         console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
         
-        // Remove the percentage part from the filename for metadata
-        const cleanedItem = item.replace(/#\d+/, '');
+        // Remove the percentage part and file extension from the filename for metadata
+        const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
         const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
   
@@ -83,14 +83,14 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
       const item = getRandomItem(items);
       console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
   
-      // Remove the percentage part from the filename for metadata
-      const cleanedItem = item.replace(/#\d+/, '');
+      // Remove the percentage part and file extension from the filename for metadata
+      const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
       const image = await loadImageAsync(path.join(__dirname, layer.path, item));
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
   
       traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
-  };
+  };  
   
 
 // Function to generate NFT
