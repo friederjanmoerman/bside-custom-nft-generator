@@ -44,7 +44,6 @@ const getRandomItem = (items) => {
   return null;
 };
 
-// Function to draw a layer
 const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
     console.log(`Drawing layer: ${layerConfig.name}`);
     let layer = config.layers[layerConfig.name];
@@ -71,7 +70,6 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
         const item = getRandomItem(items);
         console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
         
-        // Remove the percentage part and file extension from the filename for metadata
         const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
         const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
@@ -79,20 +77,19 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
         traits.push({ trait_type: layerConfig.name, value: cleanedItem });
       }
     } else if (layer && layer.path) {
+      // This block will not execute for the new layers if they are correctly placed under gender layers.
       const items = parseFilenames(layer.path);
       const item = getRandomItem(items);
       console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
-  
-      // Remove the percentage part and file extension from the filename for metadata
+      
       const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
       const image = await loadImageAsync(path.join(__dirname, layer.path, item));
       ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
   
       traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
-  };  
+  };
   
-
 // Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {
   for (let i = 0; i < editionCount; i++) {
