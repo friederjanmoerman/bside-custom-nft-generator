@@ -1,0 +1,44 @@
+{
+  "layerConfigurations": [
+    {
+      "growEditionSizeTo": 10,
+      "namePrefix": "BSide",
+      "layersOrder": [{ "name": "background" }, { "name": "gender", "subcategories": ["male", "female"] }]
+    }
+  ],
+  "layers": {
+    "background": {
+      "path": "assets/background"
+    },
+    "gender": {
+      "subcategories": {
+        "male": {
+          "probability": 0.65,
+          "layers": [
+            {
+              "name": "wings",
+              "path": "assets/male/wings"
+            },
+            {
+              "name": "body",
+              "path": "assets/male/body"
+            }
+          ]
+        },
+        "female": {
+          "probability": 0.35,
+          "layers": [
+            {
+              "name": "wings",
+              "path": "assets/female/wings"
+            },
+            {
+              "name": "body",
+              "path": "assets/female/body"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
