@@ -45,45 +45,62 @@ const getRandomItem = (items) => {
 };
 
 const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
-    console.log(`Drawing layer: ${layerConfig.name}`);
-    let layer = config.layers[layerConfig.name];
-  
-    if (layerConfig.name === "gender") {
+  console.log(`Drawing layer: ${layerConfig.name}`);
+  let layer = config.layers[layerConfig.name];
+
+  if (layerConfig.name === "gender") {
+    const subcategoryProbabilities = {};
+    for (const subcategory in layer.subcategories) {
+      subcategoryProbabilities[subcategory] = layer.subcategories[subcategory].probability;
+    }
+    gender = getRandomItem(subcategoryProbabilities);
+    console.log(`Selected gender: ${gender}`);
+
+    traits.push({ trait_type: "gender", value: gender });
+
+    const genderLayers = layer.subcategories[gender].layers;
+
+    for (const genderLayer of genderLayers) {
+      if (genderLayer.name === "eyes") continue; // Skip eyes for now
+      await drawLayer(ctx, canvas, genderLayer, traits, gender);
+    }
+
+    // Now draw the eyes layer on top
+    const eyesLayer = genderLayers.find(l => l.name === "eyes");
+    if (eyesLayer) {
       const subcategoryProbabilities = {};
-      for (const subcategory in layer.subcategories) {
-        subcategoryProbabilities[subcategory] = layer.subcategories[subcategory].probability;
+      for (const subcategory in eyesLayer.subcategories) {
+        subcategoryProbabilities[subcategory] = eyesLayer.subcategories[subcategory].probability;
       }
-      gender = getRandomItem(subcategoryProbabilities);
-      console.log(`Selected gender: ${gender}`);
-  
-      traits.push({ trait_type: "gender", value: gender });
-  
-      const genderLayers = layer.subcategories[gender].layers;
-  
-      for (const genderLayer of genderLayers) {
-        if (genderLayer.name === "eyes") continue; // Skip eyes for now
-        await drawLayer(ctx, canvas, genderLayer, traits, gender);
-      }
-  
-      // Now draw the eyes layer on top
-      const eyesLayer = genderLayers.find(l => l.name === "eyes");
-      if (eyesLayer) {
-        const subcategoryProbabilities = {};
-        for (const subcategory in eyesLayer.subcategories) {
-          subcategoryProbabilities[subcategory] = eyesLayer.subcategories[subcategory].probability;
-        }
-        const selectedSubcategory = getRandomItem(subcategoryProbabilities);
-        console.log(`Selected eyes subcategory: ${selectedSubcategory}`);
-  
-        traits.push({ trait_type: "eyes", value: selectedSubcategory });
-  
-        const subcategoryLayers = eyesLayer.subcategories[selectedSubcategory].layers;
-  
-        for (const subcategoryLayer of subcategoryLayers) {
+      const selectedSubcategory = getRandomItem(subcategoryProbabilities);
+      console.log(`Selected eyes subcategory: ${selectedSubcategory}`);
+
+      traits.push({ trait_type: "eyes", value: selectedSubcategory });
+
+      const subcategoryLayers = eyesLayer.subcategories[selectedSubcategory].layers;
+
+      for (const subcategoryLayer of subcategoryLayers) {
+        if (subcategoryLayer.subcategories) {
+          // If there are further subcategories, process them recursively
+          const subcategoryProbabilities = {};
+          for (const subcategory in subcategoryLayer.subcategories) {
+            subcategoryProbabilities[subcategory] = subcategoryLayer.subcategories[subcategory].probability;
+          }
+          const selectedSubcategory = getRandomItem(subcategoryProbabilities);
+          console.log(`Selected ${subcategoryLayer.name} subcategory: ${selectedSubcategory}`);
+
+          traits.push({ trait_type: subcategoryLayer.name, value: selectedSubcategory });
+
+          const furtherSubcategoryLayers = subcategoryLayer.subcategories[selectedSubcategory].layers;
+
+          for (const furtherSubcategoryLayer of furtherSubcategoryLayers) {
+            await drawLayer(ctx, canvas, furtherSubcategoryLayer, traits, gender);
+          }
+        } else {
           const items = parseFilenames(subcategoryLayer.path);
           const item = getRandomItem(items);
           console.log(`Drawing ${subcategoryLayer.name} layer from path ${subcategoryLayer.path}: ${item}`);
-  
+
           const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
           try {
             const image = await loadImageAsync(path.join(__dirname, subcategoryLayer.path, item));
@@ -94,82 +111,56 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
           traits.push({ trait_type: subcategoryLayer.name, value: cleanedItem });
         }
       }
-    } else if (gender && config.layers.gender.subcategories[gender].layers.some(l => l.name === layerConfig.name)) {
-      const genderLayer = config.layers.gender.subcategories[gender].layers.find(l => l.name === layerConfig.name);
-      if (genderLayer.subcategories) {
-        const subcategoryProbabilities = {};
-        for (const subcategory in genderLayer.subcategories) {
-          subcategoryProbabilities[subcategory] = genderLayer.subcategories[subcategory].probability;
-        }
-        const selectedSubcategory = getRandomItem(subcategoryProbabilities);
-        console.log(`Selected ${layerConfig.name} subcategory: ${selectedSubcategory}`);
-  
-        traits.push({ trait_type: layerConfig.name, value: selectedSubcategory });
-  
-        const subcategoryLayers = genderLayer.subcategories[selectedSubcategory].layers;
-  
-        for (const subcategoryLayer of subcategoryLayers) {
-          await drawLayer(ctx, canvas, subcategoryLayer, traits, gender);
-        }
-      } else {
-        const items = parseFilenames(genderLayer.path);
-        const item = getRandomItem(items);
-        console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
-  
-        const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
-        try {
-          const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
-          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-        } catch (error) {
-          console.error(`Failed to load image for ${layerConfig.name} layer: ${error.message}`);
-        }
-  
-        traits.push({ trait_type: layerConfig.name, value: cleanedItem });
+    }
+  } else if (gender && config.layers.gender.subcategories[gender].layers.some(l => l.name === layerConfig.name)) {
+    const genderLayer = config.layers.gender.subcategories[gender].layers.find(l => l.name === layerConfig.name);
+    if (genderLayer.subcategories) {
+      const subcategoryProbabilities = {};
+      for (const subcategory in genderLayer.subcategories) {
+        subcategoryProbabilities[subcategory] = genderLayer.subcategories[subcategory].probability;
       }
-    } else if (layer && layer.path) {
-      const items = parseFilenames(layer.path);
+      const selectedSubcategory = getRandomItem(subcategoryProbabilities);
+      console.log(`Selected ${layerConfig.name} subcategory: ${selectedSubcategory}`);
+
+      traits.push({ trait_type: layerConfig.name, value: selectedSubcategory });
+
+      const subcategoryLayers = genderLayer.subcategories[selectedSubcategory].layers;
+
+      for (const subcategoryLayer of subcategoryLayers) {
+        await drawLayer(ctx, canvas, subcategoryLayer, traits, gender);
+      }
+    } else {
+      const items = parseFilenames(genderLayer.path);
       const item = getRandomItem(items);
-      console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
-  
+      console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
+
       const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
       try {
-        const image = await loadImageAsync(path.join(__dirname, layer.path, item));
+        const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } catch (error) {
         console.error(`Failed to load image for ${layerConfig.name} layer: ${error.message}`);
       }
-  
+
       traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
-  
-    // Additional layers for glasses subcategory
-    if (layerConfig.name === "eyes" && traits.some(trait => trait.trait_type === "eyes" && trait.value === "glasses")) {
-      console.log("Adding additional layers for glasses subcategory.");
-      
-      const additionalLayers = ["hair", "clothes", "mouth"];
-      
-      for (const additionalLayer of additionalLayers) {
-        const layerConfig = config.layers[additionalLayer];
-        if (layerConfig && layerConfig.path) {
-          const items = parseFilenames(layerConfig.path);
-          const item = getRandomItem(items);
-          console.log(`Drawing additional ${additionalLayer} layer from path ${layerConfig.path}: ${item}`);
-    
-          const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
-          try {
-            const image = await loadImageAsync(path.join(__dirname, layerConfig.path, item));
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-          } catch (error) {
-            console.error(`Failed to load image for ${additionalLayer} layer: ${error.message}`);
-          }
-    
-          traits.push({ trait_type: additionalLayer, value: cleanedItem });
-        }
-      }
+  } else if (layer && layer.path) {
+    const items = parseFilenames(layer.path);
+    const item = getRandomItem(items);
+    console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
+
+    const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
+    try {
+      const image = await loadImageAsync(path.join(__dirname, layer.path, item));
+      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    } catch (error) {
+      console.error(`Failed to load image for ${layerConfig.name} layer: ${error.message}`);
     }
-  };
 
-
+    traits.push({ trait_type: layerConfig.name, value: cleanedItem });
+  }
+};
+  
 
 // Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {
