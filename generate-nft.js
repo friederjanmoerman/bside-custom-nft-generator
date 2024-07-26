@@ -141,9 +141,35 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
   
       traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
+  
+    // Additional layers for glasses subcategory
+    if (layerConfig.name === "eyes" && traits.some(trait => trait.trait_type === "eyes" && trait.value === "glasses")) {
+      console.log("Adding additional layers for glasses subcategory.");
+      
+      const additionalLayers = ["hair", "clothes", "mouth"];
+      
+      for (const additionalLayer of additionalLayers) {
+        const layerConfig = config.layers[additionalLayer];
+        if (layerConfig && layerConfig.path) {
+          const items = parseFilenames(layerConfig.path);
+          const item = getRandomItem(items);
+          console.log(`Drawing additional ${additionalLayer} layer from path ${layerConfig.path}: ${item}`);
+    
+          const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
+          try {
+            const image = await loadImageAsync(path.join(__dirname, layerConfig.path, item));
+            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          } catch (error) {
+            console.error(`Failed to load image for ${additionalLayer} layer: ${error.message}`);
+          }
+    
+          traits.push({ trait_type: additionalLayer, value: cleanedItem });
+        }
+      }
+    }
   };
-  
-  
+
+
 
 // Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {

@@ -22,7 +22,12 @@
               "subcategories": {
                 "glasses": {
                   "probability": 0.5,
-                  "layers": [{ "name": "glasses", "path": "assets/male/glasses" }]
+                  "layers": [
+                    { "name": "glasses", "path": "assets/male/glasses" },
+                    { "name": "hair", "path": "assets/male/hair" },
+                    { "name": "clothes", "path": "assets/male/clothes" },
+                    { "name": "mouth", "path": "assets/male/mouth" }
+                  ]
                 },
                 "eyes": {
                   "probability": 0.5,
@@ -42,7 +47,12 @@
               "subcategories": {
                 "glasses": {
                   "probability": 0.5,
-                  "layers": [{ "name": "glasses", "path": "assets/female/glasses" }]
+                  "layers": [
+                    { "name": "glasses", "path": "assets/female/glasses" },
+                    { "name": "hair", "path": "assets/female/hair" },
+                    { "name": "clothes", "path": "assets/female/clothes" },
+                    { "name": "mouth", "path": "assets/female/mouth" }
+                  ]
                 },
                 "eyes": {
                   "probability": 0.5,
