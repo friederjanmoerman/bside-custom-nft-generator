@@ -40,7 +40,9 @@
                         { "name": "hat", "path": "assets/male/hat" },
                         { "name": "hair", "path": "assets/male/hair" }
                       ]
-                    }
+                    },
+                    { "name": "clothes", "path": "assets/male/clothes" },
+                    { "name": "mouth", "path": "assets/male/mouth" }
                   ]
                 }
               }
@@ -72,10 +74,12 @@
                       "name": "hatOrHair",
                       "probability": 0.5,
                       "layers": [
-                        { "name": "hat", "path": "assets/female/hat" },
-                        { "name": "hair", "path": "assets/female/hair" }
+                        { "name": "hair", "path": "assets/female/hair" },
+                        { "name": "hat", "path": "assets/female/hat" }
                       ]
-                    }
+                    },
+                    { "name": "clothes", "path": "assets/female/clothes" },
+                    { "name": "mouth", "path": "assets/female/mouth" }
                   ]
                 }
               }
