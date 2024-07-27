@@ -45,122 +45,171 @@ const getRandomItem = (items) => {
 };
 
 const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
-  console.log(`Drawing layer: ${layerConfig.name}`);
-  let layer = config.layers[layerConfig.name];
-
-  if (layerConfig.name === "gender") {
-    const subcategoryProbabilities = {};
-    for (const subcategory in layer.subcategories) {
-      subcategoryProbabilities[subcategory] = layer.subcategories[subcategory].probability;
-    }
-    gender = getRandomItem(subcategoryProbabilities);
-    console.log(`Selected gender: ${gender}`);
-
-    traits.push({ trait_type: "gender", value: gender });
-
-    const genderLayers = layer.subcategories[gender].layers;
-
-    for (const genderLayer of genderLayers) {
-      if (genderLayer.name === "eyes") continue; // Skip eyes for now
-      await drawLayer(ctx, canvas, genderLayer, traits, gender);
-    }
-
-    // Now draw the eyes layer on top
-    const eyesLayer = genderLayers.find(l => l.name === "eyes");
-    if (eyesLayer) {
+    console.log(`Drawing layer: ${layerConfig.name}`);
+    let layer = config.layers[layerConfig.name];
+  
+    const RED_TEXT = '\x1b[31m';  // ANSI escape code for red text
+    const RESET_TEXT = '\x1b[0m'; // ANSI escape code to reset text color
+  
+    if (layerConfig.name === "gender") {
       const subcategoryProbabilities = {};
-      for (const subcategory in eyesLayer.subcategories) {
-        subcategoryProbabilities[subcategory] = eyesLayer.subcategories[subcategory].probability;
+      for (const subcategory in layer.subcategories) {
+        subcategoryProbabilities[subcategory] = layer.subcategories[subcategory].probability;
       }
-      const selectedSubcategory = getRandomItem(subcategoryProbabilities);
-      console.log(`Selected eyes subcategory: ${selectedSubcategory}`);
-
-      traits.push({ trait_type: "eyes", value: selectedSubcategory });
-
-      const subcategoryLayers = eyesLayer.subcategories[selectedSubcategory].layers;
-
-      for (const subcategoryLayer of subcategoryLayers) {
-        if (subcategoryLayer.subcategories) {
-          // If there are further subcategories, process them recursively
-          const subcategoryProbabilities = {};
-          for (const subcategory in subcategoryLayer.subcategories) {
-            subcategoryProbabilities[subcategory] = subcategoryLayer.subcategories[subcategory].probability;
+      gender = getRandomItem(subcategoryProbabilities);
+      console.log(`Selected gender: ${gender}`);
+  
+      traits.push({ trait_type: "gender", value: gender });
+  
+      const genderLayers = layer.subcategories[gender].layers;
+  
+      for (const genderLayer of genderLayers) {
+        if (genderLayer.name === "eyes") continue; // Skip eyes for now
+        await drawLayer(ctx, canvas, genderLayer, traits, gender);
+      }
+  
+      // Now draw the eyes layer on top
+      const eyesLayer = genderLayers.find(l => l.name === "eyes");
+      if (eyesLayer) {
+        const subcategoryProbabilities = {};
+        for (const subcategory in eyesLayer.subcategories) {
+          subcategoryProbabilities[subcategory] = eyesLayer.subcategories[subcategory].probability;
+        }
+        const selectedSubcategory = getRandomItem(subcategoryProbabilities);
+        console.log(`Selected eyes subcategory: ${selectedSubcategory}`);
+  
+        traits.push({ trait_type: "eyes", value: selectedSubcategory });
+  
+        const subcategoryLayers = eyesLayer.subcategories[selectedSubcategory].layers;
+  
+        for (const subcategoryLayer of subcategoryLayers) {
+          if (subcategoryLayer.name === "hatOrHair") {
+            // Handle hat or hair subcategory
+            const hatOrHairProbabilities = {};
+            for (const item of subcategoryLayer.layers) {
+              hatOrHairProbabilities[item.name] = subcategoryLayer.probability;
+            }
+            const selectedHatOrHair = getRandomItem(hatOrHairProbabilities);
+            console.log(`Selected hatOrHair: ${selectedHatOrHair}`);
+  
+            traits.push({ trait_type: "hatOrHair", value: selectedHatOrHair });
+  
+            const hatOrHairLayer = subcategoryLayer.layers.find(l => l.name === selectedHatOrHair);
+  
+            if (hatOrHairLayer) {
+              const items = parseFilenames(hatOrHairLayer.path);
+              const item = getRandomItem(items);
+              console.log(`Drawing ${hatOrHairLayer.name} layer from path ${hatOrHairLayer.path}: ${item}`);
+  
+              const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
+              try {
+                const imagePath = path.join(__dirname, hatOrHairLayer.path, item);
+                if (!fs.existsSync(imagePath)) {
+                  console.error(`${RED_TEXT}Path not found for ${hatOrHairLayer.name} layer: ${imagePath}${RESET_TEXT}`);
+                  return; // Exit function early if path not found
+                }
+                const image = await loadImageAsync(imagePath);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+              } catch (error) {
+                console.error(`${RED_TEXT}Failed to load image for ${hatOrHairLayer.name} layer: ${error.message}${RESET_TEXT}`);
+              }
+              traits.push({ trait_type: hatOrHairLayer.name, value: cleanedItem });
+            }
+          } else if (subcategoryLayer.subcategories) {
+            // If there are further subcategories, process them recursively
+            const subcategoryProbabilities = {};
+            for (const subcategory in subcategoryLayer.subcategories) {
+              subcategoryProbabilities[subcategory] = subcategoryLayer.subcategories[subcategory].probability;
+            }
+            const selectedSubcategory = getRandomItem(subcategoryProbabilities);
+            console.log(`Selected ${subcategoryLayer.name} subcategory: ${selectedSubcategory}`);
+  
+            traits.push({ trait_type: subcategoryLayer.name, value: selectedSubcategory });
+  
+            const furtherSubcategoryLayers = subcategoryLayer.subcategories[selectedSubcategory].layers;
+  
+            for (const furtherSubcategoryLayer of furtherSubcategoryLayers) {
+              await drawLayer(ctx, canvas, furtherSubcategoryLayer, traits, gender);
+            }
+          } else {
+            const items = parseFilenames(subcategoryLayer.path);
+            const item = getRandomItem(items);
+            console.log(`Drawing ${subcategoryLayer.name} layer from path ${subcategoryLayer.path}: ${item}`);
+  
+            const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
+            try {
+              const imagePath = path.join(__dirname, subcategoryLayer.path, item);
+              if (!fs.existsSync(imagePath)) {
+                console.error(`${RED_TEXT}Path not found for ${subcategoryLayer.name} layer: ${imagePath}${RESET_TEXT}`);
+                return; // Exit function early if path not found
+              }
+              const image = await loadImageAsync(imagePath);
+              ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+            } catch (error) {
+              console.error(`${RED_TEXT}Failed to load image for ${subcategoryLayer.name} layer: ${error.message}${RESET_TEXT}`);
+            }
+            traits.push({ trait_type: subcategoryLayer.name, value: cleanedItem });
           }
-          const selectedSubcategory = getRandomItem(subcategoryProbabilities);
-          console.log(`Selected ${subcategoryLayer.name} subcategory: ${selectedSubcategory}`);
-
-          traits.push({ trait_type: subcategoryLayer.name, value: selectedSubcategory });
-
-          const furtherSubcategoryLayers = subcategoryLayer.subcategories[selectedSubcategory].layers;
-
-          for (const furtherSubcategoryLayer of furtherSubcategoryLayers) {
-            await drawLayer(ctx, canvas, furtherSubcategoryLayer, traits, gender);
-          }
-        } else {
-          const items = parseFilenames(subcategoryLayer.path);
-          const item = getRandomItem(items);
-          console.log(`Drawing ${subcategoryLayer.name} layer from path ${subcategoryLayer.path}: ${item}`);
-
-          const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
-          try {
-            const image = await loadImageAsync(path.join(__dirname, subcategoryLayer.path, item));
-            ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-          } catch (error) {
-            console.error(`Failed to load image for ${subcategoryLayer.name} layer: ${error.message}`);
-          }
-          traits.push({ trait_type: subcategoryLayer.name, value: cleanedItem });
         }
       }
-    }
-  } else if (gender && config.layers.gender.subcategories[gender].layers.some(l => l.name === layerConfig.name)) {
-    const genderLayer = config.layers.gender.subcategories[gender].layers.find(l => l.name === layerConfig.name);
-    if (genderLayer.subcategories) {
-      const subcategoryProbabilities = {};
-      for (const subcategory in genderLayer.subcategories) {
-        subcategoryProbabilities[subcategory] = genderLayer.subcategories[subcategory].probability;
+    } else if (gender && config.layers.gender.subcategories[gender].layers.some(l => l.name === layerConfig.name)) {
+      const genderLayer = config.layers.gender.subcategories[gender].layers.find(l => l.name === layerConfig.name);
+      if (genderLayer.subcategories) {
+        const subcategoryProbabilities = {};
+        for (const subcategory in genderLayer.subcategories) {
+          subcategoryProbabilities[subcategory] = genderLayer.subcategories[subcategory].probability;
+        }
+        const selectedSubcategory = getRandomItem(subcategoryProbabilities);
+        console.log(`Selected ${layerConfig.name} subcategory: ${selectedSubcategory}`);
+  
+        traits.push({ trait_type: layerConfig.name, value: selectedSubcategory });
+  
+        const subcategoryLayers = genderLayer.subcategories[selectedSubcategory].layers;
+  
+        for (const subcategoryLayer of subcategoryLayers) {
+          await drawLayer(ctx, canvas, subcategoryLayer, traits, gender);
+        }
+      } else {
+        const items = parseFilenames(genderLayer.path);
+        const item = getRandomItem(items);
+        console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
+  
+        const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
+        try {
+          const imagePath = path.join(__dirname, genderLayer.path, item);
+          if (!fs.existsSync(imagePath)) {
+            console.error(`${RED_TEXT}Path not found for ${layerConfig.name} layer: ${imagePath}${RESET_TEXT}`);
+            return; // Exit function early if path not found
+          }
+          const image = await loadImageAsync(imagePath);
+          ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+        } catch (error) {
+          console.error(`${RED_TEXT}Failed to load image for ${layerConfig.name} layer: ${error.message}${RESET_TEXT}`);
+        }
+  
+        traits.push({ trait_type: layerConfig.name, value: cleanedItem });
       }
-      const selectedSubcategory = getRandomItem(subcategoryProbabilities);
-      console.log(`Selected ${layerConfig.name} subcategory: ${selectedSubcategory}`);
-
-      traits.push({ trait_type: layerConfig.name, value: selectedSubcategory });
-
-      const subcategoryLayers = genderLayer.subcategories[selectedSubcategory].layers;
-
-      for (const subcategoryLayer of subcategoryLayers) {
-        await drawLayer(ctx, canvas, subcategoryLayer, traits, gender);
-      }
-    } else {
-      const items = parseFilenames(genderLayer.path);
+    } else if (layer && layer.path) {
+      const items = parseFilenames(layer.path);
       const item = getRandomItem(items);
-      console.log(`Drawing ${layerConfig.name} layer for ${gender} from path ${genderLayer.path}: ${item}`);
-
+      console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
+  
       const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
       try {
-        const image = await loadImageAsync(path.join(__dirname, genderLayer.path, item));
+        const imagePath = path.join(__dirname, layer.path, item);
+        if (!fs.existsSync(imagePath)) {
+          console.error(`${RED_TEXT}Path not found for ${layerConfig.name} layer: ${imagePath}${RESET_TEXT}`);
+          return; // Exit function early if path not found
+        }
+        const image = await loadImageAsync(imagePath);
         ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
       } catch (error) {
-        console.error(`Failed to load image for ${layerConfig.name} layer: ${error.message}`);
+        console.error(`${RED_TEXT}Failed to load image for ${layerConfig.name} layer: ${error.message}${RESET_TEXT}`);
       }
-
+  
       traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
-  } else if (layer && layer.path) {
-    const items = parseFilenames(layer.path);
-    const item = getRandomItem(items);
-    console.log(`Drawing ${layerConfig.name} layer from path ${layer.path}: ${item}`);
-
-    const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
-    try {
-      const image = await loadImageAsync(path.join(__dirname, layer.path, item));
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-    } catch (error) {
-      console.error(`Failed to load image for ${layerConfig.name} layer: ${error.message}`);
-    }
-
-    traits.push({ trait_type: layerConfig.name, value: cleanedItem });
-  }
-};
-  
+  };
 
 // Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {
@@ -196,7 +245,6 @@ const generateNFT = async (editionCount, layerConfig) => {
       fs.writeFileSync(path.join(__dirname, 'output', `nft-${i}.json`), JSON.stringify(metadata, null, 2));
     }
   };
-  
 
 // Create output directory if it doesn't exist
 if (!fs.existsSync(path.join(__dirname, 'output'))) {

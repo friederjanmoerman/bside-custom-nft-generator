@@ -1,7 +1,7 @@
 {
   "layerConfigurations": [
     {
-      "growEditionSizeTo": 10,
+      "growEditionSizeTo": 400,
       "namePrefix": "BSide",
       "layersOrder": [{ "name": "background" }, { "name": "gender", "subcategories": ["male", "female"] }]
     }
@@ -26,7 +26,8 @@
                     { "name": "hair", "path": "assets/male/hair" },
                     { "name": "clothes", "path": "assets/male/clothes" },
                     { "name": "mouth", "path": "assets/male/mouth" },
-                    { "name": "glasses", "path": "assets/male/glasses" }
+                    { "name": "glasses", "path": "assets/male/glasses" },
+                    { "name": "antenna", "path": "assets/male/antenna" }
                   ]
                 },
                 "eyes": {
@@ -34,26 +35,16 @@
                   "layers": [
                     { "name": "eyes", "path": "assets/male/eyes" },
                     {
-                      "name": "headwear",
-                      "subcategories": {
-                        "hair": {
-                          "probability": 0.5,
-                          "layers": [
-                            { "name": "hair", "path": "assets/male/hair" },
-                            { "name": "clothes", "path": "assets/male/clothes" },
-                            { "name": "mouth", "path": "assets/male/mouth" }
-                          ]
-                        },
-                        "hat": {
-                          "probability": 0.5,
-                          "layers": [
-                            { "name": "clothes", "path": "assets/male/clothes" },
-                            { "name": "hat", "path": "assets/male/hat" },
-                            { "name": "mouth", "path": "assets/male/mouth" }
-                          ]
-                        }
-                      }
-                    }
+                      "name": "hatOrHair",
+                      "probability": 0.5,
+                      "layers": [
+                        { "name": "hat", "path": "assets/male/hat" },
+                        { "name": "hair", "path": "assets/male/hair" }
+                      ]
+                    },
+                    { "name": "clothes", "path": "assets/male/clothes" },
+                    { "name": "mouth", "path": "assets/male/mouth" },
+                    { "name": "antenna", "path": "assets/male/antenna" }
                   ]
                 }
               }
@@ -74,34 +65,28 @@
                     { "name": "hair", "path": "assets/female/hair" },
                     { "name": "clothes", "path": "assets/female/clothes" },
                     { "name": "mouth", "path": "assets/female/mouth" },
-                    { "name": "glasses", "path": "assets/female/glasses" }
+                    { "name": "glasses", "path": "assets/female/glasses" },
+                    { "name": "antenna", "path": "assets/female/antenna" }
                   ]
                 },
-                "eyes": {
-                  "probability": 0.5,
+                "eyesAndHair": {
+                  "probability": 0.25,
                   "layers": [
                     { "name": "eyes", "path": "assets/female/eyes" },
-                    {
-                      "name": "headwear",
-                      "subcategories": {
-                        "hair": {
-                          "probability": 0.5,
-                          "layers": [
-                            { "name": "hair", "path": "assets/female/hair" },
-                            { "name": "clothes", "path": "assets/female/clothes" },
-                            { "name": "mouth", "path": "assets/female/mouth" }
-                          ]
-                        },
-                        "hat": {
-                          "probability": 0.5,
-                          "layers": [
-                            { "name": "clothes", "path": "assets/female/clothes" },
-                            { "name": "hat", "path": "assets/female/hat" },
-                            { "name": "mouth", "path": "assets/female/mouth" }
-                          ]
-                        }
-                      }
-                    }
+                    { "name": "hair", "path": "assets/female/hair" },
+                    { "name": "clothes", "path": "assets/female/clothes" },
+                    { "name": "mouth", "path": "assets/female/mouth" },
+                    { "name": "antenna", "path": "assets/female/antenna" }
+                  ]
+                },
+                "eyesAndHat": {
+                  "probability": 0.25,
+                  "layers": [
+                    { "name": "eyes", "path": "assets/female/eyes" },
+                    { "name": "clothes", "path": "assets/female/clothes" },
+                    { "name": "hat", "path": "assets/female/hat" },
+                    { "name": "mouth", "path": "assets/female/mouth" },
+                    { "name": "antenna", "path": "assets/female/antenna" }
                   ]
                 }
               }
