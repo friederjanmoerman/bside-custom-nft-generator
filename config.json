@@ -34,17 +34,12 @@
                   "layers": [
                     { "name": "eyes", "path": "assets/male/eyes" },
                     {
-                      "name": "headwear",
-                      "subcategories": {
-                        "hair": {
-                          "probability": 0.5,
-                          "layers": [{ "name": "hair", "path": "assets/male/hair" }]
-                        },
-                        "hat": {
-                          "probability": 0.5,
-                          "layers": [{ "name": "hat", "path": "assets/male/hat" }]
-                        }
-                      }
+                      "name": "hatOrHair",
+                      "probability": 0.5,
+                      "layers": [
+                        { "name": "hat", "path": "assets/male/hat" },
+                        { "name": "hair", "path": "assets/male/hair" }
+                      ]
                     }
                   ]
                 }
@@ -74,25 +69,12 @@
                   "layers": [
                     { "name": "eyes", "path": "assets/female/eyes" },
                     {
-                      "name": "headwear",
-                      "subcategories": {
-                        "hair": {
-                          "probability": 0.5,
-                          "layers": [
-                            { "name": "hair", "path": "assets/female/hair" },
-                            { "name": "clothes", "path": "assets/female/clothes" },
-                            { "name": "mouth", "path": "assets/female/mouth" }
-                          ]
-                        },
-                        "hat": {
-                          "probability": 0.5,
-                          "layers": [
-                            { "name": "clothes", "path": "assets/female/clothes" },
-                            { "name": "hat", "path": "assets/female/hat" },
-                            { "name": "mouth", "path": "assets/female/mouth" }
-                          ]
-                        }
-                      }
+                      "name": "hatOrHair",
+                      "probability": 0.5,
+                      "layers": [
+                        { "name": "hat", "path": "assets/female/hat" },
+                        { "name": "hair", "path": "assets/female/hair" }
+                      ]
                     }
                   ]
                 }

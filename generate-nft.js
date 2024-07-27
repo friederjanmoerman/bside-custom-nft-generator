@@ -83,7 +83,39 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
         const subcategoryLayers = eyesLayer.subcategories[selectedSubcategory].layers;
   
         for (const subcategoryLayer of subcategoryLayers) {
-          if (subcategoryLayer.subcategories) {
+          if (subcategoryLayer.name === "hatOrHair") {
+            // Handle hat or hair subcategory
+            const hatOrHairProbabilities = {};
+            for (const item of subcategoryLayer.layers) {
+              hatOrHairProbabilities[item.name] = subcategoryLayer.probability;
+            }
+            const selectedHatOrHair = getRandomItem(hatOrHairProbabilities);
+            console.log(`Selected hatOrHair: ${selectedHatOrHair}`);
+  
+            traits.push({ trait_type: "hatOrHair", value: selectedHatOrHair });
+  
+            const hatOrHairLayer = subcategoryLayer.layers.find(l => l.name === selectedHatOrHair);
+  
+            if (hatOrHairLayer) {
+              const items = parseFilenames(hatOrHairLayer.path);
+              const item = getRandomItem(items);
+              console.log(`Drawing ${hatOrHairLayer.name} layer from path ${hatOrHairLayer.path}: ${item}`);
+  
+              const cleanedItem = item.replace(/#\d+/, '').replace(/\.[^/.]+$/, '');
+              try {
+                const imagePath = path.join(__dirname, hatOrHairLayer.path, item);
+                if (!fs.existsSync(imagePath)) {
+                  console.error(`${RED_TEXT}Path not found for ${hatOrHairLayer.name} layer: ${imagePath}${RESET_TEXT}`);
+                  return; // Exit function early if path not found
+                }
+                const image = await loadImageAsync(imagePath);
+                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+              } catch (error) {
+                console.error(`${RED_TEXT}Failed to load image for ${hatOrHairLayer.name} layer: ${error.message}${RESET_TEXT}`);
+              }
+              traits.push({ trait_type: hatOrHairLayer.name, value: cleanedItem });
+            }
+          } else if (subcategoryLayer.subcategories) {
             // If there are further subcategories, process them recursively
             const subcategoryProbabilities = {};
             for (const subcategory in subcategoryLayer.subcategories) {
@@ -178,7 +210,6 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
       traits.push({ trait_type: layerConfig.name, value: cleanedItem });
     }
   };
-  
 
 // Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {
@@ -214,7 +245,6 @@ const generateNFT = async (editionCount, layerConfig) => {
       fs.writeFileSync(path.join(__dirname, 'output', `nft-${i}.json`), JSON.stringify(metadata, null, 2));
     }
   };
-  
 
 // Create output directory if it doesn't exist
 if (!fs.existsSync(path.join(__dirname, 'output'))) {
