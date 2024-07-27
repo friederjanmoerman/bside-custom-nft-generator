@@ -26,7 +26,8 @@
                     { "name": "hair", "path": "assets/male/hair" },
                     { "name": "clothes", "path": "assets/male/clothes" },
                     { "name": "mouth", "path": "assets/male/mouth" },
-                    { "name": "glasses", "path": "assets/male/glasses" }
+                    { "name": "glasses", "path": "assets/male/glasses" },
+                    { "name": "antenna", "path": "assets/male/antenna" }
                   ]
                 },
                 "eyes": {
@@ -42,7 +43,8 @@
                       ]
                     },
                     { "name": "clothes", "path": "assets/male/clothes" },
-                    { "name": "mouth", "path": "assets/male/mouth" }
+                    { "name": "mouth", "path": "assets/male/mouth" },
+                    { "name": "antenna", "path": "assets/male/antenna" }
                   ]
                 }
               }
@@ -63,7 +65,8 @@
                     { "name": "hair", "path": "assets/female/hair" },
                     { "name": "clothes", "path": "assets/female/clothes" },
                     { "name": "mouth", "path": "assets/female/mouth" },
-                    { "name": "glasses", "path": "assets/female/glasses" }
+                    { "name": "glasses", "path": "assets/female/glasses" },
+                    { "name": "antenna", "path": "assets/female/antenna" }
                   ]
                 },
                 "eyes": {
@@ -79,7 +82,8 @@
                       ]
                     },
                     { "name": "clothes", "path": "assets/female/clothes" },
-                    { "name": "mouth", "path": "assets/female/mouth" }
+                    { "name": "mouth", "path": "assets/female/mouth" },
+                    { "name": "antenna", "path": "assets/female/antenna" }
                   ]
                 }
               }
