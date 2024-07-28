@@ -1,7 +1,7 @@
 {
   "layerConfigurations": [
     {
-      "growEditionSizeTo": 400,
+      "growEditionSizeTo": 10,
       "namePrefix": "BSide",
       "layersOrder": [{ "name": "background" }, { "name": "gender", "subcategories": ["male", "female"] }]
     }
@@ -30,19 +30,22 @@
                     { "name": "antenna", "path": "assets/male/antenna" }
                   ]
                 },
-                "eyes": {
-                  "probability": 0.5,
+                "eyesAndHair": {
+                  "probability": 0.25,
                   "layers": [
                     { "name": "eyes", "path": "assets/male/eyes" },
-                    {
-                      "name": "hatOrHair",
-                      "probability": 0.5,
-                      "layers": [
-                        { "name": "hat", "path": "assets/male/hat" },
-                        { "name": "hair", "path": "assets/male/hair" }
-                      ]
-                    },
+                    { "name": "hair", "path": "assets/male/hair" },
                     { "name": "clothes", "path": "assets/male/clothes" },
+                    { "name": "mouth", "path": "assets/male/mouth" },
+                    { "name": "antenna", "path": "assets/male/antenna" }
+                  ]
+                },
+                "eyesAndHat": {
+                  "probability": 0.25,
+                  "layers": [
+                    { "name": "eyes", "path": "assets/male/eyes" },
+                    { "name": "clothes", "path": "assets/male/clothes" },
+                    { "name": "hat", "path": "assets/male/hat" },
                     { "name": "mouth", "path": "assets/male/mouth" },
                     { "name": "antenna", "path": "assets/male/antenna" }
                   ]
