@@ -3,3 +3,6 @@ node_modules/
 output/
 assets/
 _temp
+_staging-test
+_assets_freesia
+_assets_sunflower
