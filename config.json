@@ -4,7 +4,8 @@
       "growEditionSizeTo": 10,
       "namePrefix": "Bside",
       "description": "B Side is more than just a series of digital art pieces; it's a dynamic and evolving ecosystem. The bees go beyond the traditional profile picture (PFP) concept, offering a multi-faceted experience that integrates art, gaming and tangible products. Dive with wings wide open into the rich story-driven world of the hive.",
-      "layersOrder": [{ "name": "background" }, { "name": "gender", "subcategories": ["male", "female"] }]
+      "layersOrder": [{ "name": "background" }, { "name": "gender", "subcategories": ["male", "female"] }],
+      "startNumber": 1600
     }
   ],
   "layers": {

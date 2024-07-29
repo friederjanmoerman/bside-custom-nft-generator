@@ -222,71 +222,75 @@ const formatTraitType = (traitType) => {
   return traitType.replace(/\b\w/g, char => char.toUpperCase());
 };
 
-// Function to generate NFT
 const generateNFT = async (editionCount, layerConfig) => {
-  const allNFTs = [];
-
-  for (let i = 0; i < editionCount; i++) {
-    const canvas = createCanvas(1000, 1000); // Adjust size as needed
-    const ctx = canvas.getContext('2d');
-    const traits = [];
-
-    for (const layer of layerConfig.layersOrder) {
-      await drawLayer(ctx, canvas, layer, traits);
+    const allNFTs = [];
+    const startNumber = layerConfig.startNumber || 0;
+  
+    for (let i = 0; i < editionCount; i++) {
+      const canvas = createCanvas(1000, 1000); // Adjust size as needed
+      const ctx = canvas.getContext('2d');
+      const traits = [];
+  
+      for (const layer of layerConfig.layersOrder) {
+        await drawLayer(ctx, canvas, layer, traits);
+      }
+  
+      const imageNumber = startNumber + i;
+      const imageName = `${layerConfig.namePrefix}-${imageNumber}.png`;
+      const out = fs.createWriteStream(path.join(__dirname, 'output', imageName));
+      const stream = canvas.createPNGStream();
+      stream.pipe(out);
+  
+      // Wait for the image file to finish writing
+      await new Promise((resolve) => out.on('finish', resolve));
+      console.log(`NFT ${imageNumber} was created.`);
+  
+      // Remove duplicates from traits
+      const uniqueTraits = Array.from(new Set(traits.map(t => JSON.stringify(t)))).map(t => JSON.parse(t));
+  
+      // Format trait values and trait_type
+      uniqueTraits.forEach(trait => {
+        trait.trait_type = formatTraitType(trait.trait_type);
+        trait.value = formatValue(trait.value);
+      });
+  
+      // Create a metadata object
+      const metadata = {
+        filename: imageName,
+        title: `${layerConfig.namePrefix}-${imageNumber}`,
+        nbcopies: '1',
+        nbself: '0',
+        description: `${layerConfig.description}`,
+        ...uniqueTraits.reduce((acc, trait) => {
+          acc[trait.trait_type] = trait.value;
+          return acc;
+        }, {})
+      };
+  
+      fs.writeFileSync(path.join(__dirname, 'output', `${layerConfig.namePrefix}-${imageNumber}.json`), JSON.stringify(metadata, null, 2));
+      allNFTs.push(metadata);
     }
-
-    const imageName = `${layerConfig.namePrefix}-${i}.png`;
-    const out = fs.createWriteStream(path.join(__dirname, 'output', imageName));
-    const stream = canvas.createPNGStream();
-    stream.pipe(out);
-
-    // Wait for the image file to finish writing
-    await new Promise((resolve) => out.on('finish', resolve));
-    console.log(`NFT ${i} was created.`);
-
-    // Remove duplicates from traits
-    const uniqueTraits = Array.from(new Set(traits.map(t => JSON.stringify(t)))).map(t => JSON.parse(t));
-
-    // Format trait values and trait_type
-    uniqueTraits.forEach(trait => {
-      trait.trait_type = formatTraitType(trait.trait_type);
-      trait.value = formatValue(trait.value);
-    });
-
-    // Create a metadata object
-    const metadata = {
-      filename: imageName,
-      title: `${layerConfig.namePrefix}-${i}`,
-      description: `${layerConfig.description}`,
-      ...uniqueTraits.reduce((acc, trait) => {
-        acc[trait.trait_type] = trait.value;
-        return acc;
-      }, {})
-    };
-
-    fs.writeFileSync(path.join(__dirname, 'output', `${layerConfig.namePrefix}-${i}.json`), JSON.stringify(metadata, null, 2));
-    allNFTs.push(metadata);
+  
+    // Convert allNFTs to CSV
+    const fields = ['filename', 'title', 'nbcopies', 'nbself', 'description', ...Array.from(new Set(allNFTs.flatMap(nft => Object.keys(nft)))).filter(key => !['filename', 'title', 'nbcopies', 'nbself', 'description'].includes(key))];
+    const opts = { fields };
+    try {
+      const parser = new Parser(opts);
+      const csv = parser.parse(allNFTs);
+      fs.writeFileSync(path.join(__dirname, 'output', 'Bside.csv'), csv);
+      console.log('CSV file created.');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  
+  // Create output directory if it doesn't exist
+  if (!fs.existsSync(path.join(__dirname, 'output'))) {
+    fs.mkdirSync(path.join(__dirname, 'output'));
+  }
+  
+  // Generate NFTs based on the configuration
+  for (const layerConfig of config.layerConfigurations) {
+    generateNFT(layerConfig.growEditionSizeTo, layerConfig).catch(console.error);
   }
 
-  // Convert allNFTs to CSV
-  const fields = ['filename', 'title', 'description', ...Array.from(new Set(allNFTs.flatMap(nft => Object.keys(nft)))).filter(key => !['filename', 'title', 'description'].includes(key))];
-  const opts = { fields };
-  try {
-    const parser = new Parser(opts);
-    const csv = parser.parse(allNFTs);
-    fs.writeFileSync(path.join(__dirname, 'output', 'Bside.csv'), csv);
-    console.log('CSV file created.');
-  } catch (err) {
-    console.error(err);
-  }
-};
-
-// Create output directory if it doesn't exist
-if (!fs.existsSync(path.join(__dirname, 'output'))) {
-  fs.mkdirSync(path.join(__dirname, 'output'));
-}
-
-// Generate NFTs based on the configuration
-for (const layerConfig of config.layerConfigurations) {
-  generateNFT(layerConfig.growEditionSizeTo, layerConfig).catch(console.error);
-}
