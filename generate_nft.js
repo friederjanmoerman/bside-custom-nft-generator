@@ -201,8 +201,19 @@ const drawLayer = async (ctx, canvas, layerConfig, traits, gender = null) => {
         console.error(`${RED_TEXT}Path not found for ${layerConfig.name} layer: ${imagePath}${RESET_TEXT}`);
         return; // Exit function early if path not found
       }
+      // Load the image to get its dimensions
       const image = await loadImageAsync(imagePath);
-      ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+      // Get the natural dimensions of the loaded image
+      const layerWidth = layerConfig.width || image.width;
+      const layerHeight = layerConfig.height || image.height;
+
+      // Calculate center position
+      const layerX = (canvas.width - layerWidth) / 2; // Center X position
+      const layerY = (canvas.height - layerHeight) / 2; // Center Y position
+
+      // Draw the image at specified position and size
+      ctx.drawImage(image, layerX, layerY, layerWidth, layerHeight);
     } catch (error) {
       console.error(`${RED_TEXT}Failed to load image for ${layerConfig.name} layer: ${error.message}${RESET_TEXT}`);
     }
@@ -226,7 +237,7 @@ const generateNFT = async (editionCount, layerConfig) => {
   const startNumber = layerConfig.startNumber || 0;
 
   for (let i = 0; i < editionCount; i++) {
-    const canvas = createCanvas(1000, 1000); // Adjust size as needed
+    const canvas = createCanvas(1772, 1772); // Adjust size as needed
     const ctx = canvas.getContext('2d');
     const traits = [];
 
